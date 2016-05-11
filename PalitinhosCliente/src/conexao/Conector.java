@@ -44,12 +44,15 @@ public class Conector {
         
         JogoPalitinho jogo = conector.getJogo();
         try {
-            jogo.login(JOptionPane.showInputDialog("Digite seu nome:"));            
+            String nomeJogador = JOptionPane.showInputDialog("Digite seu nome:");
+            jogo.login(nomeJogador);            
             List<String> jogadores = jogo.getLista();
+            //String palpite = JOptionPane.showInputDialog("Digite seu palpite:");
+            jogo.jogar(nomeJogador, Integer.parseInt(JOptionPane.showInputDialog("Digite sua quantidade de palitos:")));
             
             for (String nome : jogadores) {
                 System.out.println("Jogador: " + nome + " está no jogo.");
-            }            
+            }     
         } catch (RemoteException ex) {
             Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
         }                
