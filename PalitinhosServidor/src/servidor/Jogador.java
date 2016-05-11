@@ -11,8 +11,17 @@ package servidor;
  */
 public class Jogador {
     private String nome;
-    private int numeroPalito;
+    private int numeroPalito = 3;
     private int palpite;
+    private boolean preparado = false;
+
+    public boolean isPreparado() {
+        return preparado;
+    }
+
+    public void setPreparado(boolean preparado) {
+        this.preparado = preparado;
+    }
     
     /**
      * Inicializa um jogador com o nome.
@@ -40,7 +49,7 @@ public class Jogador {
 
     public void setPalpite(int palpite) {
         this.palpite = palpite;
-    }        
+    }
     
     
 }

@@ -91,7 +91,7 @@ public interface JogoPalitinho extends Remote{
     void sair(String nick) throws RemoteException;
     
     
-    void jogar(int quantidade) throws RemoteException;
+    void jogar(String nick, int quantidade) throws RemoteException;
     void login(String nome) throws RemoteException;
     List<String> getLista() throws RemoteException; // retorna a lista de jogadores
 }
