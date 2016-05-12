@@ -21,8 +21,7 @@ public class Sample
     Connection connection = null;
     try
     {
-      // create a database connection
-      connection = DriverManager.getConnection("jdbc:sqlite:p.db");
+                                                                                             
       Statement statement = connection.createStatement();
       //statement.setQueryTimeout(30);  // set timeout to 30 sec.
 
