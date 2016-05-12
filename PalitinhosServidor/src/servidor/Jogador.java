@@ -14,15 +14,9 @@ public class Jogador {
     private int numeroPalito = 3;
     private int palpite;
     private int qtdPalitos;
-    private boolean preparado = false;
-
-    public boolean isPreparado() {
-        return preparado;
-    }
-
-    public void setPreparado(boolean preparado) {
-        this.preparado = preparado;
-    }
+    private boolean preparado;
+    private boolean jogadorDaVez;
+    private boolean deuPalpite;
     
     /**
      * Inicializa um jogador com o nome.
@@ -31,6 +25,43 @@ public class Jogador {
     public Jogador (String nome) {
         this.nome = nome;
     }
+
+    public boolean isDeuPalpite() {
+        return deuPalpite;
+    }
+
+    public void setDeuPalpite(boolean deuPalpite) {
+        this.deuPalpite = deuPalpite;
+    }
+
+    public void decrementarNumeroPalito() {
+        if (numeroPalito > 0)
+            numeroPalito--;
+    }
+    public int getQtdPalitos() {
+        return qtdPalitos;
+    }
+
+    public void setQtdPalitos(int qtdPalitos) {
+        this.qtdPalitos = qtdPalitos;
+    }
+
+    public boolean isJogadorDaVez() {
+        return jogadorDaVez;
+    }
+
+    public void setJogadorDaVez(boolean jogadorDaVez) {
+        this.jogadorDaVez = jogadorDaVez;
+    }
+
+    
+    public boolean isPreparado() {
+        return preparado;
+    }
+
+    public void setPreparado(boolean preparado) {
+        this.preparado = preparado;
+    }        
 
     public String getNome() {
         return nome;
