@@ -84,6 +84,20 @@ public interface JogoPalitinho extends Remote{
     boolean darPalpite(String nick, int quantidade) throws RemoteException;
     
     /**
+     * computa o somatório de todos os palitos mostrados
+     * @return o somatório de todos os palitos mostrados.
+     * @throws RemoteException 
+     */
+    int getTotalPalitosMostrados() throws RemoteException;
+    
+    /**
+     * Define o nome do jogador que deu o palpite correto.
+     * @return O nick do jogador que deu o palpite correto.
+     * @throws RemoteException 
+     */
+    String definirVencedor() throws RemoteException;
+    
+    /**
      * Remove o personagem do jogo.
      * @param nick do jogador que deseja sair do jogo.
      * @throws RemoteException 
