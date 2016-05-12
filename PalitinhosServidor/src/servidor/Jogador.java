@@ -13,6 +13,7 @@ public class Jogador {
     private String nome;
     private int numeroPalito = 3;
     private int palpite;
+    private int qtdPalitos;
     private boolean preparado = false;
 
     public boolean isPreparado() {
