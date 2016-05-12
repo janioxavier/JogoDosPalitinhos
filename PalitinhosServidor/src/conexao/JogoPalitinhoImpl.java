@@ -10,6 +10,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 import servidor.Jogador;
+import servidor.JogoBD;
 
 public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPalitinho {
 
@@ -17,7 +18,15 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     private List<String> lista = new ArrayList<String>();
     private List<Jogador> listaPlayers = new ArrayList<>();
     private int numerodePL = 0; // numero de jogadores online
+    private JogoBD bd;  // banco de dados do jogo
+    
 
+    
+    public JogoPalitinhoImpl() throws RemoteException {
+        super();
+        bd = new JogoBD();
+    }
+    
     /**
      * Busca o jogador dentro da lista de jogadores.
      *
@@ -27,18 +36,33 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
      * o jogador na lista return -1 caso o nome não esteja na lista
      */
     public boolean buscarJogador(String nome) {
-        //for (int j = 0; j < listaPlayers.size(); j++) {
+        boolean find = false;
         for (Jogador j : listaPlayers) {
             if (j.getNome().equals(nome)) {
-                return true; //listaPlayers.get(j);
+                find = true; //listaPlayers.get(j);
+                break;
             }
         }
-        return false;
+        return find;
     }
-
-    public JogoPalitinhoImpl() throws RemoteException {
-        super();
+    
+    /**
+     *  Encontra um jogador que está atualmente no jogo.
+     * @param nome nome do jogador
+     * @return um objeto jogador do jogo
+     */
+    private Jogador encontrarJogador(String nome) {
+        Jogador jogador = null;
+        for (Jogador j : listaPlayers) {
+            if (j.getNome().equals(nome)) {
+                jogador = j;
+                break;
+            }
+        }
+        return jogador;
     }
+    
+    
 
     @Override
     public void jogar(String nick, int quantidade) throws RemoteException {
@@ -76,22 +100,40 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
 
     @Override
     public boolean entrar(String nick) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        boolean sucesso = false;
+        if (!buscarJogador(nick)) { 
+            Jogador jogador = new Jogador(nick);            
+            sucesso = true;
+        }        
+        return sucesso;
     }
 
     @Override
     public void iniciarPartida(String nick) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        Jogador jogador = encontrarJogador(nick);
+        if (jogador != null) {
+            jogador.setPreparado(true);
+        }
     }
 
     @Override
     public List<String> getJogadoresPreparados() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<String> jogadoresPreparados = new ArrayList<>();
+        for (Jogador jogador: listaPlayers) {
+            if (jogador.isPreparado())
+                jogadoresPreparados.add(jogador.getNome());
+        }
+        return jogadoresPreparados;
     }
 
     @Override
     public List<String> getJogadoresNaoPreparados() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<String> jogadoresNaoPreparados = new ArrayList<>();
+        for (Jogador jogador: listaPlayers) {
+            if (!jogador.isPreparado())
+                jogadoresNaoPreparados.add(jogador.getNome());
+        }
+        return jogadoresNaoPreparados;
     }
 
     @Override
@@ -101,26 +143,96 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
 
     @Override
     public int getPalitosRestantes() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        int palitosRestantes = 0;
+        for (Jogador jogador : listaPlayers) {
+            palitosRestantes += jogador.getQtdPalitos();
+        }
+        return palitosRestantes;
     }
 
     @Override
     public String getJogadorDaVez() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String nick = "";
+        for (Jogador jogador : listaPlayers) {
+            if (jogador.isJogadorDaVez()) {
+                nick = jogador.getNome();
+                break;
+            }
+        }
+        return nick;
     }
 
     @Override
     public List<String> getJogadoresAguardando() throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<String> jogadoresAguardando = new ArrayList<>();
+        for (Jogador jogador : listaPlayers) {
+            if (!jogador.isJogadorDaVez()) {
+                jogadoresAguardando.add(jogador.getNome());
+            }
+        }
+        return jogadoresAguardando;
     }
 
     @Override
     public boolean darPalpite(String nick, int quantidade) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        boolean sucesso = false;
+        Jogador jogador = encontrarJogador(nick);
+        if (jogador != null) {
+            jogador.setPalpite(quantidade);
+            jogador.setDeuPalpite(true);
+            sucesso = true;
+        }
+        return sucesso;        
     }
+    
+    @Override
+    public String definirVencedor() throws RemoteException {        
+        String vencedor = null;
+        if (!isAlguemNaoDeuPalpite()) {
+            int totalPalitos = getTotalPalitosMostrados();
+            
+            for (Jogador jogador : listaPlayers) {
+                if (jogador.getPalpite() == totalPalitos) {
+                    vencedor = jogador.getNome();
+                    break;
+                }
+            }
+            
+        }
+        
+        return vencedor;
+    }
+    
+    @Override
+    public int getTotalPalitosMostrados() {
+        int totalPalitos = 0;
+        for (Jogador jogador : listaPlayers)
+            totalPalitos = jogador.getQtdPalitos();
+        return totalPalitos;
+    }
+    
+    /**
+     * 
+     * @return true se alguem ainda não deu o seu palpite, false caso
+     * contrário.
+     */
+    private boolean isAlguemNaoDeuPalpite() {
+        boolean alguemNaoDeuPalpite = false;
+        for (Jogador jogador : listaPlayers) {
+            if (!jogador.isDeuPalpite()) {
+                alguemNaoDeuPalpite = true;
+                break;
+            }
+        }
+        return alguemNaoDeuPalpite;
+    }
+    
 
     @Override
     public void sair(String nick) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+        Jogador jogador = encontrarJogador(nick);
+        if (jogador != null)
+            listaPlayers.remove(jogador);
+    }    
+    
 }
