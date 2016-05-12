@@ -16,6 +16,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import conexao.TelaCliente;
  
 public class Conector {
     private RMICliente cliente;
@@ -47,8 +48,19 @@ public class Conector {
             String nomeJogador = JOptionPane.showInputDialog("Digite seu nome:");
             jogo.login(nomeJogador);            
             List<String> jogadores = jogo.getLista();
-            //String palpite = JOptionPane.showInputDialog("Digite seu palpite:");
-            jogo.jogar(nomeJogador, Integer.parseInt(JOptionPane.showInputDialog("Digite sua quantidade de palitos:")));
+            //if(jogadores.size() >=4){
+                //String palpite = JOptionPane.showInputDialog("Digite seu palpite:");
+                
+                TelaCliente tela = new TelaCliente(jogadores, jogo , nomeJogador);
+                tela.setVisible(true);
+                
+                
+               
+                
+                /*for (String j : jogadores) {
+                    jogo.jogar(j, Integer.parseInt(JOptionPane.showInputDialog("Digite sua quantidade de palitos:"+j)));
+                }*/
+            //}
             
             for (String nome : jogadores) {
                 System.out.println("Jogador: " + nome + " está no jogo.");
