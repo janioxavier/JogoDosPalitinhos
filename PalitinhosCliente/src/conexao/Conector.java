@@ -16,7 +16,7 @@ import java.rmi.RemoteException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import conexao.TelaCliente;
+import visao.TelaCliente;
  
 public class Conector {
     private RMICliente cliente;
