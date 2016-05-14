@@ -10,6 +10,14 @@ import java.rmi.RemoteException;
 import java.util.List;
  
 public interface JogoPalitinho extends Remote{
+    
+    /**
+     * verifica se a partida já foi iniciada
+     * @return true se a partida foi iniciada, false caso contrário.
+     * @throws RemoteException 
+     */
+    boolean isPartidaIniciada() throws RemoteException;
+    
     /**
      * Verifica se o nick já está cadastrado.
      * @param nick nick do jogador
@@ -113,6 +121,12 @@ public interface JogoPalitinho extends Remote{
      */
     void sair(String nick) throws RemoteException;
     
+    /**
+     * Obtém o nick do jogador vencedor da partida
+     * @return o nome do vencedor da partida, null caso contrário.
+     * @throws RemoteException 
+     */
+    String getVencedorDaPartida() throws RemoteException;
     
     void jogar(String nick, int quantidade) throws RemoteException;
     void login(String nome) throws RemoteException;

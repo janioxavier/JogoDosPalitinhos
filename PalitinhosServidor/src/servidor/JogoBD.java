@@ -43,7 +43,7 @@ public class JogoBD {
         List<String> values = new ArrayList<String>();
         values.add("'"+jogador.getNome()+"'");
         values.add(Integer.toString(jogador.getPalpite()));
-        values.add(Integer.toString(jogador.getQtdPalitos()));
+        values.add(Integer.toString(jogador.getApostaPalitos()));
         
         int value = 0;
         if (jogador.isJogadorDaVez())

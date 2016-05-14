@@ -11,9 +11,9 @@ package servidor;
  */
 public class Jogador {
     private String nome;
-    private int numeroPalito = 3;
+    private int totalPalitos = 3;
     private int palpite;
-    private int qtdPalitos;
+    private int apostaPalitos;
     private boolean preparado;
     private boolean jogadorDaVez;
     private boolean deuPalpite;
@@ -34,16 +34,16 @@ public class Jogador {
         this.deuPalpite = deuPalpite;
     }
 
-    public void decrementarNumeroPalito() {
-        if (numeroPalito > 0)
-            numeroPalito--;
+    public void decrementarTotalPalitos() {
+        if (totalPalitos > 0)
+            totalPalitos--;
     }
-    public int getQtdPalitos() {
-        return qtdPalitos;
+    public int getApostaPalitos() {
+        return apostaPalitos;
     }
 
-    public void setQtdPalitos(int qtdPalitos) {
-        this.qtdPalitos = qtdPalitos;
+    public void setApostaPalitos(int qtdPalitos) {
+        this.apostaPalitos = qtdPalitos;
     }
 
     public boolean isJogadorDaVez() {
@@ -68,11 +68,11 @@ public class Jogador {
     }
 
     public int getNumeroPalito() {
-        return numeroPalito;
+        return totalPalitos;
     }
 
     public void setNumeroPalito(int numeroPalito) {
-        this.numeroPalito = numeroPalito;
+        this.totalPalitos = numeroPalito;
     }
 
     public int getPalpite() {

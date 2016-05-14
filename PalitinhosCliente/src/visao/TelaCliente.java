@@ -25,6 +25,10 @@ public class TelaCliente extends javax.swing.JFrame {
     JogoPalitinho jogo;
     String player;
     
+    public TelaCliente(JogoPalitinho jogo) {
+        this.jogo = jogo;
+    }
+    
     public TelaCliente(List<String> player, JogoPalitinho jogo, String nomej) {
         initComponents();
         this.jogadores = player;

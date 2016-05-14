@@ -19,6 +19,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     private List<Jogador> listaPlayers;
     private int numerodePL = 0; // numero de jogadores online
     private int jogadorDaVez;   // indice que indica o jogador da vez
+    private boolean partidaIniciada;    // indica que o jogo está rolando
     private JogoBD bd;  // banco de dados do jogo    
     
     public JogoPalitinhoImpl() throws RemoteException {
@@ -26,8 +27,25 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         lista = new ArrayList<String>();
         listaPlayers = new ArrayList<>();
         jogadorDaVez = 0;
+        partidaIniciada = false;
         bd = new JogoBD();
     }
+    
+    public boolean isPartidaIniciada() throws RemoteException {
+        return partidaIniciada;
+    }
+    
+    public String getVencedorDaPartida() throws RemoteException {
+        String vencedor = null;
+        for (Jogador jogador : listaPlayers) {
+            if (jogador.getNumeroPalito() == 0) {
+                vencedor = jogador.getNome();
+                break;
+            }
+        }
+        return vencedor;
+    }
+    
     
     /**
      * Busca o jogador dentro da lista de jogadores.
@@ -118,6 +136,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         // verifica se todos os jogadores estão preparados
         if (isTodosPreparados()) {
             jogadorDaVez = 0;
+            partidaIniciada = true;
             definirProximoJogador();
         }
     }
@@ -168,7 +187,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     public int getPalitosRestantes() throws RemoteException {
         int palitosRestantes = 0;
         for (Jogador jogador : listaPlayers) {
-            palitosRestantes += jogador.getQtdPalitos();
+            palitosRestantes += jogador.getApostaPalitos();
         }
         return palitosRestantes;
     }
@@ -234,7 +253,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     public int getTotalPalitosMostrados() {
         int totalPalitos = 0;
         for (Jogador jogador : listaPlayers)
-            totalPalitos = jogador.getQtdPalitos();
+            totalPalitos = jogador.getApostaPalitos();
         return totalPalitos;
     }
     
@@ -254,11 +273,12 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         return alguemNaoDeuPalpite;
     }
     
+    
     @Override
     public void esconderPalitinhos(String nick, int quantidade) throws RemoteException {
         Jogador jogador = encontrarJogador(nick);
         if (jogador != null) {
-            jogador.setQtdPalitos(quantidade);
+            jogador.setApostaPalitos(quantidade);
             
         }
     }
