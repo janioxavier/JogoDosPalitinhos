@@ -11,9 +11,9 @@ package servidor;
  */
 public class Jogador {
     private String nome;
-    private int numeroPalito = 3;
+    private int numeroPalito = 3; // total de palitos do jogador
     private int palpite;
-    private int qtdPalitos;
+    private int qtdPalitos; // quantidade de palitos dentro da mão do jogador
     private boolean preparado;
     private boolean jogadorDaVez;
     private boolean deuPalpite;

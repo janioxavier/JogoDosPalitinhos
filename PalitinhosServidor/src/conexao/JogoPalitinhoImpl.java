@@ -104,6 +104,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         if (!buscarJogador(nick)) { 
             Jogador novoJogador = new Jogador(nick);
             listaPlayers.add(novoJogador);
+            numerodePL++;
             sucesso = true;
         }        
         return sucesso;

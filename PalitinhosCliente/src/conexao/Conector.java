@@ -48,11 +48,20 @@ public class Conector {
             String nomeJogador = JOptionPane.showInputDialog("Digite seu nome:");
             jogo.login(nomeJogador);            
             List<String> jogadores = jogo.getLista();
-            //if(jogadores.size() >=4){
-                //String palpite = JOptionPane.showInputDialog("Digite seu palpite:");
+            while(true){
+            if(jogadores.size() >=4){
+                String palitosEscondidos = JOptionPane.showInputDialog("Digite sua quantidade de palitos escondida: "+nomeJogador);
                 
-                TelaCliente tela = new TelaCliente(jogadores, jogo , nomeJogador);
-                tela.setVisible(true);
+                //while(true){
+                    jogo.esconderPalitinhos(nomeJogador, Integer.parseInt(palitosEscondidos)); // quantidade de palitos na mão do jogador
+                    if(jogo.getJogadorDaVez().equals(nomeJogador)){
+                        String palpite = JOptionPane.showInputDialog("Digite seu palpite para essa rodada: "+ nomeJogador);;
+                        jogo.darPalpite(nomeJogador, Integer.parseInt(palpite));
+                    }
+                //}
+                
+                //TelaCliente tela = new TelaCliente(jogadores, jogo , nomeJogador);
+                //tela.setVisible(true);
                 
                 
                
@@ -60,11 +69,12 @@ public class Conector {
                 /*for (String j : jogadores) {
                     jogo.jogar(j, Integer.parseInt(JOptionPane.showInputDialog("Digite sua quantidade de palitos:"+j)));
                 }*/
-            //}
+            }
+            }
             
-            for (String nome : jogadores) {
+            /*for (String nome : jogadores) {
                 System.out.println("Jogador: " + nome + " está no jogo.");
-            }     
+            }*/   
         } catch (RemoteException ex) {
             Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
         }                
