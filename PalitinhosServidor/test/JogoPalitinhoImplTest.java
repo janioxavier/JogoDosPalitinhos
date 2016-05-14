@@ -62,6 +62,7 @@ public class JogoPalitinhoImplTest {
         jogo.entrar("pedro");
         jogo.iniciarPartida("joão");
         jogo.iniciarPartida("pedro");
+        jogo.iniciarJogo();
         assertEquals(2, jogo.getJogadoresPreparados().size());
         assertEquals("joão", jogo.getJogadorDaVez());
     }
@@ -78,6 +79,10 @@ public class JogoPalitinhoImplTest {
         jogo.iniciarPartida("lucas");
         jogo.iniciarPartida("mario");
         
+        jogo.iniciarJogo();
+        jogo.iniciarJogo();
+        
+        assertEquals("joão", jogo.getJogadorDaVez());
         assertEquals("joão", jogo.getJogadorDaVez());
         jogo.darPalpite("joão", 1);
         assertEquals("pedro", jogo.getJogadorDaVez());

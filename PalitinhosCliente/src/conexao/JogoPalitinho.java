@@ -19,6 +19,13 @@ public interface JogoPalitinho extends Remote{
     boolean isPartidaIniciada() throws RemoteException;
     
     /**
+     * verifica se todos deram o seu palpite
+     * @return true se todos deram o palpite, false caso contrário.
+     * @throws RemoteException 
+     */
+    boolean isTodosDeramPalpite() throws RemoteException;
+    
+    /**
      * Verifica se o nick já está cadastrado.
      * @param nick nick do jogador
      * @return true se o nome não existe, false caso contrário
@@ -127,6 +134,35 @@ public interface JogoPalitinho extends Remote{
      * @throws RemoteException 
      */
     String getVencedorDaPartida() throws RemoteException;
+    
+    /**
+     * Inicia o jogo pelo primeiro jogador a jogar.
+     * @throws RemoteException 
+     */
+    void iniciarJogo() throws RemoteException;
+    
+    /**
+     * Inicia uma nova rodada
+     * @throws RemoteException 
+     */
+    void iniciarNovaRodada() throws RemoteException;
+    
+    /**
+     * Obtem a posição do jogador com dado nick.
+     * @param nick nick de um jogador
+     * @return a posição de dado jogador
+     * @throws RemoteException 
+     */
+    int posicaoJogador(String nick) throws RemoteException;
+    
+    /**
+     * Obtem o palpite de um dado jogador.
+     * @param nick nome do jogador que deu o palpite
+     * @return o numero do palpite do jogador, -1 caso o palpite não tenha sido
+     * escolhido ainda ou se o jogador não existe.
+     * @throws RemoteException 
+     */
+    int getPalpiteJogador(String nick) throws RemoteException;
     
     void jogar(String nick, int quantidade) throws RemoteException;
     void login(String nome) throws RemoteException;

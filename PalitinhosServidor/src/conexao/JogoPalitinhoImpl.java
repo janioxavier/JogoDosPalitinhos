@@ -132,14 +132,55 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         Jogador jogador = encontrarJogador(nick);
         if (jogador != null) {
             jogador.setPreparado(true);
-        }
-        // verifica se todos os jogadores estão preparados
+        }        
+    }
+    
+    @Override
+    public void iniciarJogo() throws RemoteException {
+        // verifica se todos os sjogadores estão preparados
         if (isTodosPreparados()) {
             jogadorDaVez = 0;
             partidaIniciada = true;
             definirProximoJogador();
         }
     }
+    
+    @Override
+    public void iniciarNovaRodada() throws RemoteException {
+        for (Jogador jogador : listaPlayers) {
+            jogador.setDeuPalpite(false);
+            jogador.setPalpite(-1);
+        }
+        jogadorDaVez = 0;
+    }
+    
+    @Override
+    public int getPalpiteJogador(String nick) throws RemoteException {
+        int palpite = -1;
+        Jogador jogador = encontrarJogador(nick);
+        if (jogador != null)
+            palpite = jogador.getPalpite();
+        return palpite;
+    }
+    
+    @Override
+    public int posicaoJogador(String nick) throws RemoteException {
+        int posicao = -1;
+        if (encontrarJogador(nick) != null) {
+            posicao++;
+            for (Jogador jogador : listaPlayers) {
+                if (jogador.getNome().equals(nick)) {
+                    break;
+                } else {
+                    posicao ++;
+                }
+            }
+        }
+        return posicao;
+        
+        
+    }
+    
     
     private void definirProximoJogador() {
         if (jogadorDaVez == listaPlayers.size()) {
@@ -194,7 +235,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
 
     @Override
     public String getJogadorDaVez() throws RemoteException {
-        String nick = "";
+        String nick = null;
         for (Jogador jogador : listaPlayers) {
             if (jogador.isJogadorDaVez()) {
                 nick = jogador.getNome();
@@ -255,6 +296,11 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         for (Jogador jogador : listaPlayers)
             totalPalitos = jogador.getApostaPalitos();
         return totalPalitos;
+    }
+    
+    @Override
+    public boolean isTodosDeramPalpite() {
+        return !isAlguemNaoDeuPalpite();
     }
     
     /**

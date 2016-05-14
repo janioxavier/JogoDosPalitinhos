@@ -24,6 +24,9 @@ public class Jogador {
      */
     public Jogador (String nome) {
         this.nome = nome;
+        jogadorDaVez = false;
+        deuPalpite = false;
+        preparado = false;
     }
 
     public boolean isDeuPalpite() {

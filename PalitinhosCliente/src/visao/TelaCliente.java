@@ -26,6 +26,7 @@ public class TelaCliente extends javax.swing.JFrame {
     String player;
     
     public TelaCliente(JogoPalitinho jogo) {
+        initComponents();
         this.jogo = jogo;
     }
     

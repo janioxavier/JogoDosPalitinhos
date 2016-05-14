@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import visao.TelaCliente;
+import visao.TelaJogo;
  
 public class Conector {
     private RMICliente cliente;
@@ -37,37 +38,22 @@ public class Conector {
 		
     public JogoPalitinho getJogo() {
     	return jogo;
-    }
-    
-    public void iniciarJogo(JogoPalitinho jogo) throws RemoteException {
-        String nomeJogador = JOptionPane.showInputDialog("Digite seu nome:");
-        jogo.entrar(nomeJogador);
-        
-        TelaCliente tela = new TelaCliente(jogo);
-        tela.setVisible(true);
-        
-        aguardarInicioPartida(jogo);
-        
-        
-    }
-    
-    private void aguardarInicioPartida(JogoPalitinho jogo) throws RemoteException {
-        do {
-            JOptionPane.showConfirmDialog(null, "Aguardando jogadores");
-        } while(!jogo.isPartidaIniciada());
-    }
+    }        
     
     public static void main(String[] args) {
         Conector conector = new Conector();
         conector.connect();
         
         JogoPalitinho jogo = conector.getJogo();
-        try {
+        //try {
         //    String nomeJogador = JOptionPane.showInputDialog("Digite seu nome:");
           //  jogo.login(nomeJogador);            
            // List<String> jogadores = jogo.getLista();
             
-            conector.iniciarJogo(jogo);
+            //conector.iniciarJogo(jogo);
+            TelaJogo tela = new TelaJogo(jogo);
+            tela.setVisible(true);
+            tela.iniciarJogo();
             
             //if(jogadores.size() >=4){
                 //String palpite = JOptionPane.showInputDialog("Digite seu palpite:");
@@ -86,8 +72,8 @@ public class Conector {
             //for (String nome : jogadores) {
               //  System.out.println("Jogador: " + nome + " está no jogo.");
             //}     
-        } catch (RemoteException ex) {
-            Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
-        }                
+       // } catch (RemoteException ex) {
+         //   Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
+        //}                
     }
 }
