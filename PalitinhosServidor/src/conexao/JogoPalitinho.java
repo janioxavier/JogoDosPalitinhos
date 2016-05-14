@@ -98,6 +98,15 @@ public interface JogoPalitinho extends Remote{
     String definirVencedor() throws RemoteException;
     
     /**
+     * Esconde os palitinhos dos jogadores.
+     * @param nick nick do jogador que deseja esconder uma certa quantidade
+     * de palitinhos.
+     * @param quantidade quantidade de palitinhos que serão escondidos
+     * @throws RemoteException 
+     */
+    void esconderPalitinhos(String nick, int quantidade) throws RemoteException;
+    
+    /**
      * Remove o personagem do jogo.
      * @param nick do jogador que deseja sair do jogo.
      * @throws RemoteException 

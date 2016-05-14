@@ -15,15 +15,17 @@ import servidor.JogoBD;
 public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPalitinho {
 
     private static final long serialVersionUID = -7854287696962149563L;
-    private List<String> lista = new ArrayList<String>();
-    private List<Jogador> listaPlayers = new ArrayList<>();
+    private List<String> lista;
+    private List<Jogador> listaPlayers;
     private int numerodePL = 0; // numero de jogadores online
-    private JogoBD bd;  // banco de dados do jogo
-    
-
+    private int jogadorDaVez;   // indice que indica o jogador da vez
+    private JogoBD bd;  // banco de dados do jogo    
     
     public JogoPalitinhoImpl() throws RemoteException {
         super();
+        lista = new ArrayList<String>();
+        listaPlayers = new ArrayList<>();
+        jogadorDaVez = 0;
         bd = new JogoBD();
     }
     
@@ -32,7 +34,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
      *
      * @param nome do jogador que esta a ser buscado.
      *
-     * return (indice do jogador dentro do array) return j caso seja encontrado
+     * @return (indice do jogador dentro do array) return j caso seja encontrado
      * o jogador na lista return -1 caso o nome não esteja na lista
      */
     public boolean buscarJogador(String nome) {
@@ -60,9 +62,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
             }
         }
         return jogador;
-    }
-    
-    
+    }        
 
     @Override
     public void jogar(String nick, int quantidade) throws RemoteException {
@@ -102,7 +102,8 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     public boolean entrar(String nick) throws RemoteException {
         boolean sucesso = false;
         if (!buscarJogador(nick)) { 
-            Jogador jogador = new Jogador(nick);            
+            Jogador novoJogador = new Jogador(nick);
+            listaPlayers.add(novoJogador);
             sucesso = true;
         }        
         return sucesso;
@@ -114,6 +115,28 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         if (jogador != null) {
             jogador.setPreparado(true);
         }
+        // verifica se todos os jogadores estão preparados
+        if (isTodosPreparados()) {
+            jogadorDaVez = 0;
+            definirProximoJogador();
+        }
+    }
+    
+    private void definirProximoJogador() {
+        if (jogadorDaVez == listaPlayers.size()) {
+            jogadorDaVez = 0;
+        }
+        listaPlayers.get(jogadorDaVez).setJogadorDaVez(true);
+    }
+    
+    private boolean isTodosPreparados() {
+        boolean todosProntos = true;
+        for (Jogador jogador : listaPlayers) {
+            if (!jogador.isPreparado()) {
+                todosProntos = false;
+            }
+        }
+        return todosProntos;
     }
 
     @Override
@@ -180,6 +203,9 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         if (jogador != null) {
             jogador.setPalpite(quantidade);
             jogador.setDeuPalpite(true);
+            jogador.setJogadorDaVez(false);
+            jogadorDaVez++;
+            definirProximoJogador();
             sucesso = true;
         }
         return sucesso;        
@@ -188,6 +214,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     @Override
     public String definirVencedor() throws RemoteException {        
         String vencedor = null;
+        // definir o vencedor quando todos derem o seu palpite
         if (!isAlguemNaoDeuPalpite()) {
             int totalPalitos = getTotalPalitosMostrados();
             
@@ -223,16 +250,23 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
                 alguemNaoDeuPalpite = true;
                 break;
             }
-        }
+         }
         return alguemNaoDeuPalpite;
     }
     
+    @Override
+    public void esconderPalitinhos(String nick, int quantidade) throws RemoteException {
+        Jogador jogador = encontrarJogador(nick);
+        if (jogador != null) {
+            jogador.setQtdPalitos(quantidade);
+            
+        }
+    }
 
     @Override
     public void sair(String nick) throws RemoteException {
         Jogador jogador = encontrarJogador(nick);
         if (jogador != null)
             listaPlayers.remove(jogador);
-    }    
-    
+    }        
 }
