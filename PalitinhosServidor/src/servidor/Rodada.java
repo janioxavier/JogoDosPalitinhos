@@ -85,6 +85,7 @@ public class Rodada {
         for (Jogador jogador : jogadores) {
             if (jogador.getPalpite() == totalPalitosMostrados) {
                 vencedorRodada = jogador;
+                vencedorRodada.decrementarTotalPalitos();
                 break;
             }                        
         }

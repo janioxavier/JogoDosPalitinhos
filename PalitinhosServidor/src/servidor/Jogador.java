@@ -17,6 +17,11 @@ public class Jogador {
     private boolean preparado;
     private boolean jogadorDaVez;
     private boolean deuPalpite;
+    private boolean vencedor;
+
+    public void setVencedor(boolean vencedor) {
+        this.vencedor = vencedor;
+    }
     
     /**
      * Inicializa um jogador com o nome.
@@ -28,6 +33,7 @@ public class Jogador {
         jogadorDaVez = false;
         deuPalpite = false;
         preparado = false;
+        vencedor = false;
     }
 
     public boolean isDeuPalpite() {
@@ -39,6 +45,7 @@ public class Jogador {
     }
 
     public void decrementarTotalPalitos() {
+        System.out.println("DECREMENTOU!!");
         if (totalPalitos > 0)
             totalPalitos--;
     }

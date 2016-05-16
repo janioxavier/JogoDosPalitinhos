@@ -319,8 +319,9 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         String nomeVencedor;
         Jogador vencedor = rodada.getVencedorRodada();
         
-        if (vencedor != null)
+        if (vencedor != null){
             nomeVencedor = vencedor.getNome();
+        }
         else {
             nomeVencedor = null;
         }
@@ -389,5 +390,10 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         Jogador jogador = encontrarJogador(nick);
         if (jogador != null)
             listaPlayers.remove(jogador);
-    }        
+    }
+    
+    public int getTotalPalitosJogador(String nick) throws RemoteException{
+        Jogador jogador = encontrarJogador(nick);
+        return jogador.getNumeroPalito();
+    }
 }

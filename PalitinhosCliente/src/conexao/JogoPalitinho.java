@@ -164,6 +164,14 @@ public interface JogoPalitinho extends Remote{
      */
     int getPalpiteJogador(String nick) throws RemoteException;
     
+    /**
+     * 
+     * @param nick nome do jogador para retornar o total de palpites
+     * @return total de palpites do jogador
+     * @throws RemoteException 
+     */
+    int getTotalPalitosJogador(String nick) throws RemoteException;
+    
     void jogar(String nick, int quantidade) throws RemoteException;
     void login(String nome) throws RemoteException;
     List<String> getLista() throws RemoteException; // retorna a lista de jogadores
