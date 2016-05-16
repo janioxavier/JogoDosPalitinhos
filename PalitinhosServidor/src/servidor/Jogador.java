@@ -11,7 +11,7 @@ package servidor;
  */
 public class Jogador {
     private String nome;
-    private int totalPalitos = 3;
+    private int totalPalitos;
     private int palpite;
     private int apostaPalitos;
     private boolean preparado;
@@ -24,6 +24,7 @@ public class Jogador {
      */
     public Jogador (String nome) {
         this.nome = nome;
+        totalPalitos = 3;
         jogadorDaVez = false;
         deuPalpite = false;
         preparado = false;

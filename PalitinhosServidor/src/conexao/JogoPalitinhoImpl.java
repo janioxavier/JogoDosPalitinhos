@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import servidor.Jogador;
 import servidor.JogoBD;
+import servidor.Rodada;
 
 public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPalitinho {
 
@@ -21,6 +22,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     private int jogadorDaVez;   // indice que indica o jogador da vez
     private boolean partidaIniciada;    // indica que o jogo está rolando
     private JogoBD bd;  // banco de dados do jogo    
+    private Rodada rodada;
     
     public JogoPalitinhoImpl() throws RemoteException {
         super();
@@ -28,7 +30,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         listaPlayers = new ArrayList<>();
         jogadorDaVez = 0;
         partidaIniciada = false;
-        bd = new JogoBD();
+        bd = new JogoBD();        
     }
     
     public boolean isPartidaIniciada() throws RemoteException {
@@ -36,6 +38,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     }
     
     public String getVencedorDaPartida() throws RemoteException {
+        
         String vencedor = null;
         for (Jogador jogador : listaPlayers) {
             if (jogador.getNumeroPalito() == 0) {
@@ -72,7 +75,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
      * @return um objeto jogador do jogo
      */
     private Jogador encontrarJogador(String nome) {
-        Jogador jogador = null;
+        Jogador jogador = null;        
         for (Jogador j : listaPlayers) {
             if (j.getNome().equals(nome)) {
                 jogador = j;
@@ -136,22 +139,30 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     }
     
     @Override
-    public void iniciarJogo() throws RemoteException {
+    public void iniciarJogo() throws RemoteException {                
         // verifica se todos os sjogadores estão preparados
-        if (isTodosPreparados()) {
-            jogadorDaVez = 0;
+        if (isTodosPreparados() && !partidaIniciada) {
+            //jogadorDaVez = 0;
             partidaIniciada = true;
-            definirProximoJogador();
+            //definirProximoJogador();
+            rodada = new Rodada(listaPlayers);
         }
     }
     
     @Override
     public void iniciarNovaRodada() throws RemoteException {
         for (Jogador jogador : listaPlayers) {
+            jogador.setApostaPalitos(0);
+            jogador.setPalpite(-1);
+            jogador.setDeuPalpite(false);
+        }
+        rodada.iniciarNovaRodada(listaPlayers);
+        /*
+        for (Jogador jogador : listaPlayers) {
             jogador.setDeuPalpite(false);
             jogador.setPalpite(-1);
         }
-        jogadorDaVez = 0;
+        jogadorDaVez = 0;*/
     }
     
     @Override
@@ -183,10 +194,12 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     
     
     private void definirProximoJogador() {
+        rodada.proximoJogador();
+        /*
         if (jogadorDaVez == listaPlayers.size()) {
             jogadorDaVez = 0;
         }
-        listaPlayers.get(jogadorDaVez).setJogadorDaVez(true);
+        listaPlayers.get(jogadorDaVez).setJogadorDaVez(true);*/
     }
     
     private boolean isTodosPreparados() {
@@ -235,6 +248,16 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
 
     @Override
     public String getJogadorDaVez() throws RemoteException {
+        Jogador jogadorDaVez = rodada.getJogadorDaVez();
+        String nomeJogadorDaVez;
+        
+        if (jogadorDaVez != null)
+            nomeJogadorDaVez = jogadorDaVez.getNome();
+        else
+            nomeJogadorDaVez = "";
+        
+        return nomeJogadorDaVez;
+        /*
         String nick = null;
         for (Jogador jogador : listaPlayers) {
             if (jogador.isJogadorDaVez()) {
@@ -242,7 +265,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
                 break;
             }
         }
-        return nick;
+        return nick;*/
     }
 
     @Override
@@ -261,18 +284,49 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         boolean sucesso = false;
         Jogador jogador = encontrarJogador(nick);
         if (jogador != null) {
-            jogador.setPalpite(quantidade);
-            jogador.setDeuPalpite(true);
-            jogador.setJogadorDaVez(false);
-            jogadorDaVez++;
-            definirProximoJogador();
-            sucesso = true;
+            sucesso = darPalpite(jogador, quantidade);      
         }
         return sucesso;        
     }
+
+    private boolean darPalpite(Jogador jogador, int quantidade) {
+        boolean sucesso = false;
+        if (!isPalpiteDado(quantidade)) {
+            jogador.setPalpite(quantidade);
+            jogador.setDeuPalpite(true);/*
+            jogador.setJogadorDaVez(false);
+            jogadorDaVez++;
+            definirProximoJogador();*/
+            rodada.proximoJogador();
+            sucesso = true;
+        }
+        return sucesso;
+    }
+    
+    private boolean isPalpiteDado(int quantidade) {
+        boolean palpiteDado = false;        
+        for (Jogador jogador : listaPlayers) {
+            if (jogador.getPalpite() == quantidade) {
+                palpiteDado = true;
+                break;
+            }
+        }
+        return palpiteDado;
+    }
     
     @Override
-    public String definirVencedor() throws RemoteException {        
+    public String getVencedorRodada() throws RemoteException {                
+        String nomeVencedor;
+        Jogador vencedor = rodada.getVencedorRodada();
+        
+        if (vencedor != null)
+            nomeVencedor = vencedor.getNome();
+        else {
+            nomeVencedor = null;
+        }
+        
+        return nomeVencedor;
+        /*
         String vencedor = null;
         // definir o vencedor quando todos derem o seu palpite
         if (!isAlguemNaoDeuPalpite()) {
@@ -281,21 +335,23 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
             for (Jogador jogador : listaPlayers) {
                 if (jogador.getPalpite() == totalPalitos) {
                     vencedor = jogador.getNome();
+                    jogador.decrementarTotalPalitos();
                     break;
                 }
-            }
-            
+            }            
         }
         
-        return vencedor;
+        return vencedor;*/
     }
     
     @Override
     public int getTotalPalitosMostrados() {
+        return rodada.getTotalPalitosMostrados();
+        /*
         int totalPalitos = 0;
         for (Jogador jogador : listaPlayers)
-            totalPalitos = jogador.getApostaPalitos();
-        return totalPalitos;
+            totalPalitos += jogador.getApostaPalitos();
+        return totalPalitos;*/
     }
     
     @Override
@@ -308,7 +364,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
      * @return true se alguem ainda não deu o seu palpite, false caso
      * contrário.
      */
-    private boolean isAlguemNaoDeuPalpite() {
+    private boolean isAlguemNaoDeuPalpite() {      
         boolean alguemNaoDeuPalpite = false;
         for (Jogador jogador : listaPlayers) {
             if (!jogador.isDeuPalpite()) {
@@ -324,8 +380,7 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     public void esconderPalitinhos(String nick, int quantidade) throws RemoteException {
         Jogador jogador = encontrarJogador(nick);
         if (jogador != null) {
-            jogador.setApostaPalitos(quantidade);
-            
+            jogador.setApostaPalitos(quantidade);            
         }
     }
 

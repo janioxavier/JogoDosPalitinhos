@@ -40,7 +40,7 @@ public class Conector {
     	return jogo;
     }        
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RemoteException {
         Conector conector = new Conector();
         conector.connect();
         
@@ -54,7 +54,6 @@ public class Conector {
             TelaJogo tela = new TelaJogo(jogo);
             tela.setVisible(true);
             tela.iniciarJogo();
-            
             //if(jogadores.size() >=4){
                 //String palpite = JOptionPane.showInputDialog("Digite seu palpite:");
             

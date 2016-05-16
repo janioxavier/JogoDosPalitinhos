@@ -110,7 +110,7 @@ public interface JogoPalitinho extends Remote{
      * @return O nick do jogador que deu o palpite correto.
      * @throws RemoteException 
      */
-    String definirVencedor() throws RemoteException;
+    String getVencedorRodada() throws RemoteException;
     
     /**
      * Esconde os palitinhos dos jogadores.

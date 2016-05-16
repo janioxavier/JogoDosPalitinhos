@@ -12,40 +12,49 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static java.lang.Thread.sleep;
 
 /**
  *
  * @author Jânio Xavier
  */
-public class TelaJogo extends javax.swing.JFrame {
+public class TelaJogo extends javax.swing.JFrame{
 
+    public static final int MAXIMO_JOGADORES = 6;
     private JogoPalitinho jogo;
     private String nomeJogador;
     private int numeroJogadoresOnline;
     private List<String> jogadoresOnline;
     private boolean escolheuAposta;
     private boolean deuPalpite;
-
+    
     /**
      * Creates new form TelaJogo
      *
      * @param jogo jogo dos palitinhos
      */
     public TelaJogo(JogoPalitinho jogo) {
-        initComponents();
+        initComponents();                    
         this.jogo = jogo;
+        nomeJogador = null;
         numeroJogadoresOnline = 0;
         jogadoresOnline = new ArrayList<>();
         escolheuAposta = false;
         deuPalpite = false;
         setMensagemJogo("aguardando jogadores...");
-    }
+    }   
+    
+    
 
     /**
      * Creates new form TelaJogo
      */
     public TelaJogo() {
         initComponents();
+    }
+    
+    public String getNomeJogador() {
+        return nomeJogador;
     }
 
     private void setNomeJogador(String nick, int posicao) {
@@ -97,40 +106,67 @@ public class TelaJogo extends javax.swing.JFrame {
     public void iniciarJogo() {
         try {
             aguardarInicioPartida();
-
-            String vencedorJogo = null;
-            String vencedorRodada = null;
-            String jogadorDaVez = null;
-
-            while (vencedorJogo == null) {
-                jogadorDaVez = jogo.getJogadorDaVez();
-                if (jogadorDaVez.equals(nomeJogador)) {
-                    aguardarEscolhaDaAposta();
-                    aguardarPalpite();                    
-                    atualizarPalpitesEscolhidos();
-                } else {
-                    setMensagemJogo("Aguardando... " + jogadorDaVez);
-                }
-
-                if (jogo.isTodosDeramPalpite()) {
-                    vencedorRodada = jogo.definirVencedor();
-                    if (vencedorRodada != null) {
-                        setMensagemJogo("Jogador " + nomeJogador + " acertou o palpite");
-                    } else {
-                        setMensagemJogo("Ninguem deu o palpite correto");
-                    }
-                    sleep(5000);
-                    jogo.iniciarNovaRodada();
-                }
-                vencedorJogo = jogo.getVencedorDaPartida();                
-            }
+            atualizarJogadoresPartida();            
             
+            String vencedorJogo = null;                        
+            while (vencedorJogo == null && isVisible()) {                
+                atualizarPalpitesEscolhidos();
+                realizarJogada();           
+                atualizarPalpitesEscolhidos();
+                verificarVencedorRodada();
+                vencedorJogo = jogo.getVencedorDaPartida();                
+            }            
+            if (!isVisible()) {
+                jogo.sair(nomeJogador);                
+                dispose();
+                System.exit(0);
+            }
             setMensagemJogo(vencedorJogo + " Venceu o jogo");
-
+            sleep(10000);            
         } catch (RemoteException | InterruptedException ex) {
             Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    private void atualizarJogadoresPartida() throws RemoteException {
+        List<String> jogadoresPreparados = jogo.getJogadoresPreparados();
+        int count = 0;
+        for (String nick : jogadoresPreparados) {
+            setNomeJogador(nick, jogo.posicaoJogador(nick));
+            count++;
+        }
+        numeroJogadoresOnline = count;
+        while (count < MAXIMO_JOGADORES) {
+            setNomeJogador("", count);
+            setPalpiteJogador("", count);
+            count++;
+        }
+    }
+
+    private void realizarJogada() throws RemoteException {
+        String jogadorDaVez;
+        jogadorDaVez = jogo.getJogadorDaVez();        
+        if (jogadorDaVez.equals(nomeJogador)) {
+            aguardarEscolhaDaAposta();
+            aguardarPalpite();            
+        } else {
+            setMensagemJogo("Aguardando... " + jogadorDaVez);
+        }        
+    }
+
+    private void verificarVencedorRodada() throws InterruptedException, RemoteException {
+        String vencedorRodada;
+        if (jogo.isTodosDeramPalpite()) {
+            vencedorRodada = jogo.getVencedorRodada();
+            if (vencedorRodada != null) {
+                setMensagemJogo("Jogador " + vencedorRodada + " acertou o palpite");
+            } else {
+                setMensagemJogo("Ninguem deu o palpite correto");
+            }
+            sleep(5000);
+            jogo.iniciarNovaRodada();
+        }
+    }        
     
     private void atualizarPalpitesEscolhidos() throws RemoteException {
         List<String> jogadoresPreparados = jogo.getJogadoresPreparados();
@@ -146,6 +182,7 @@ public class TelaJogo extends javax.swing.JFrame {
         }        
     }
 
+    /*
     private boolean adicionarJogador(List<String> jogadores) throws RemoteException {
         // adiciona um jogador na lista de jogadores online apenas se
         // o jogador for novo.
@@ -158,12 +195,13 @@ public class TelaJogo extends javax.swing.JFrame {
             }
         }
         return novoJogadorAdicionado;
-    }
+    }*/
 
     private void aguardarInicioPartida() throws RemoteException {
         do {
-            adicionarJogador(jogo.getJogadoresPreparados());
-            if (jogadoresOnline.size() >= 2) {
+            //adicionarJogador(jogo.getJogadoresPreparados());
+            atualizarJogadoresPartida();
+            if (numeroJogadoresOnline >= 2 && nomeJogador != null) {
                 aguardarInicioPartida(10);
             }
         } while (!jogo.isPartidaIniciada());
@@ -171,14 +209,17 @@ public class TelaJogo extends javax.swing.JFrame {
     
     private void aguardarInicioPartida(int tempo) throws RemoteException {
         int count = tempo;
+        int numeroJogadoresOnlineAntes = numeroJogadoresOnline;
         do {
             setMensagemJogo("O jogo será iniciado em " + count + " segundos");
             count--;
             try {
                 sleep(1000);
-                if (adicionarJogador(jogo.getJogadoresPreparados())) {
+                numeroJogadoresOnlineAntes = numeroJogadoresOnline;
+                atualizarJogadoresPartida();                
+                if (numeroJogadoresOnlineAntes < numeroJogadoresOnline) {
                     setMensagemJogo("Novo jogador adicionado");
-                    sleep(3000);
+                    sleep(5000);
                     count = 10;
                 }
             } catch (InterruptedException ex) {
@@ -189,17 +230,17 @@ public class TelaJogo extends javax.swing.JFrame {
     }
 
 
-    private void aguardarEscolhaDaAposta() {
-        do {
+    private void aguardarEscolhaDaAposta() {                
+        do {                        
             setMensagemJogo("Escolha sua aposta");
-        } while (!escolheuAposta);
+        } while (!escolheuAposta && isVisible());
         escolheuAposta = false;
     }
 
-    private void aguardarPalpite() {
-        do {
+    private void aguardarPalpite() {        
+        do {            
             setMensagemJogo("Dê o seu palpite");
-        } while (!deuPalpite);
+        } while (!deuPalpite && isVisible());
         deuPalpite = false;
     }
     
@@ -239,9 +280,13 @@ public class TelaJogo extends javax.swing.JFrame {
         confirmButton = new javax.swing.JButton();
         iniciarButton = new javax.swing.JButton();
         campoName = new javax.swing.JTextField();
+        jSeparator1 = new javax.swing.JSeparator();
+        jSeparator2 = new javax.swing.JSeparator();
+        filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 220), new java.awt.Dimension(0, 220), new java.awt.Dimension(32767, 220));
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Jogo Palitinhos");
+        setBackground(new java.awt.Color(0, 51, 51));
+        setForeground(java.awt.Color.black);
 
         jogador1.setText("jogador1");
 
@@ -256,7 +301,7 @@ public class TelaJogo extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(palpite1)
                     .addComponent(jogador1))
-                .addContainerGap(54, Short.MAX_VALUE))
+                .addContainerGap(69, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -403,6 +448,7 @@ public class TelaJogo extends javax.swing.JFrame {
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
+        mensagemJogo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         mensagemJogo.setText("MENSAGENS DO JOGO");
 
         campoField.setText("campo");
@@ -438,61 +484,78 @@ public class TelaJogo extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jSeparator2))
+                        .addGap(50, 50, 50)
+                        .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                                .addComponent(campoField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 144, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(37, 37, 37)
+                                .addComponent(confirmButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jPanel8, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(91, 91, 91)
-                                .addComponent(campoField, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(confirmButton))
+                                .addGap(210, 210, 210)
+                                .addComponent(campoName, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(54, 54, 54)
-                                .addComponent(iniciarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 93, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 215, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(74, 74, 74)))
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(227, 227, 227)
-                .addComponent(campoName, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                                .addGap(177, 177, 177)
+                                .addComponent(iniciarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(177, 177, 177)
+                                .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(123, 123, 123)
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(107, 107, 107)
+                        .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(42, 42, 42)
-                        .addComponent(campoName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(iniciarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(31, 31, 31)
-                                .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                    .addComponent(campoField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(confirmButton))))))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(campoName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(iniciarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(39, 39, 39)
+                .addComponent(campoField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(confirmButton)
+                .addGap(21, 21, 21))
         );
 
         pack();
@@ -508,7 +571,8 @@ public class TelaJogo extends javax.swing.JFrame {
         try {
             if (mensagemJogo.getText().contains("palpite")) {
                 if (!jogo.darPalpite(nomeJogador, campoValor)) {
-                    setMensagemJogo("Esse palpite já foi dado");                    
+                    setMensagemJogo("Esse palpite já foi dado"); 
+                    sleep(5000);                                       
                 } else {                    
                     deuPalpite = true;
                 }
@@ -516,10 +580,16 @@ public class TelaJogo extends javax.swing.JFrame {
                 jogo.esconderPalitinhos(nomeJogador, campoValor);
                 escolheuAposta = true;
             }
-        } catch (RemoteException ex) {
+        } catch (RemoteException | InterruptedException ex) {
             Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_confirmButtonActionPerformed
+
+    private void campoNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoNameActionPerformed
+        // TODO add your handling code here:
+        campoName.setText("");
+
+    }//GEN-LAST:event_campoNameActionPerformed
 
     private void iniciarButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iniciarButtonActionPerformed
         // TODO add your handling code here:
@@ -541,11 +611,7 @@ public class TelaJogo extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_iniciarButtonActionPerformed
-
-    private void campoNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoNameActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_campoNameActionPerformed
-
+    
     /**
      * @param args the command line arguments
      */
@@ -585,6 +651,7 @@ public class TelaJogo extends javax.swing.JFrame {
     private javax.swing.JTextField campoField;
     private javax.swing.JTextField campoName;
     private javax.swing.JButton confirmButton;
+    private javax.swing.Box.Filler filler1;
     private javax.swing.JButton iniciarButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -592,6 +659,8 @@ public class TelaJogo extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel jogador1;
     private javax.swing.JLabel jogador2;
     private javax.swing.JLabel jogador3;
@@ -606,4 +675,5 @@ public class TelaJogo extends javax.swing.JFrame {
     private javax.swing.JLabel palpite5;
     private javax.swing.JLabel palpite6;
     // End of variables declaration//GEN-END:variables
+
 }

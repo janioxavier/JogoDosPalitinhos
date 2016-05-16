@@ -91,6 +91,6 @@ public class JogoPalitinhoImplTest {
         jogo.darPalpite("lucas", 2);
         assertEquals("mario", jogo.getJogadorDaVez());
         jogo.darPalpite("mario", 6);
-        assertEquals("joão", jogo.getJogadorDaVez());
+        assertEquals("", jogo.getJogadorDaVez());
     }
 }
