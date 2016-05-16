@@ -25,7 +25,7 @@ public class Conector {
      
     void connect() {
         try {
-            cliente = new RMICliente("localhost");
+            cliente = new RMICliente("10.5.23.143");
             jogo = (JogoPalitinho) cliente.getRemoteObject();
         } catch (MalformedURLException e) {
             e.printStackTrace();
