@@ -117,9 +117,10 @@ public interface JogoPalitinho extends Remote{
      * @param nick nick do jogador que deseja esconder uma certa quantidade
      * de palitinhos.
      * @param quantidade quantidade de palitinhos que serão escondidos
+     * @return true se o jogador possui tal quantidade de palitos, false cc.
      * @throws RemoteException 
      */
-    void esconderPalitinhos(String nick, int quantidade) throws RemoteException;
+    boolean esconderPalitinhos(String nick, int quantidade) throws RemoteException;
     
     /**
      * Remove o personagem do jogo.

@@ -46,8 +46,13 @@ public class Jogador {
         return apostaPalitos;
     }
 
-    public void setApostaPalitos(int qtdPalitos) {
-        this.apostaPalitos = qtdPalitos;
+    public boolean setApostaPalitos(int qtdPalitos) {
+        boolean sucesso = false;
+        if (qtdPalitos <= totalPalitos) {
+            this.apostaPalitos = qtdPalitos;
+            sucesso = true;
+        }
+        return sucesso;        
     }
 
     public boolean isJogadorDaVez() {

@@ -33,10 +33,12 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
         bd = new JogoBD();        
     }
     
+    @Override
     public boolean isPartidaIniciada() throws RemoteException {
         return partidaIniciada;
     }
     
+    @Override
     public String getVencedorDaPartida() throws RemoteException {
         
         String vencedor = null;
@@ -377,11 +379,13 @@ public class JogoPalitinhoImpl extends UnicastRemoteObject implements JogoPaliti
     
     
     @Override
-    public void esconderPalitinhos(String nick, int quantidade) throws RemoteException {
+    public boolean esconderPalitinhos(String nick, int quantidade) throws RemoteException {
         Jogador jogador = encontrarJogador(nick);
+        boolean sucesso = false;
         if (jogador != null) {
-            jogador.setApostaPalitos(quantidade);            
+            sucesso = jogador.setApostaPalitos(quantidade);            
         }
+        return sucesso;
     }
 
     @Override

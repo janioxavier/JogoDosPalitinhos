@@ -106,13 +106,11 @@ public class TelaJogo extends javax.swing.JFrame{
     public void iniciarJogo() {
         try {
             aguardarInicioPartida();
-            atualizarJogadoresPartida();            
+            atualizarJogadoresPartida();  
             
             String vencedorJogo = null;                        
-            while (vencedorJogo == null && isVisible()) {                
-                atualizarPalpitesEscolhidos();
-                realizarJogada();           
-                atualizarPalpitesEscolhidos();
+            while (vencedorJogo == null && isVisible()) {                                
+                realizarJogada();                           
                 verificarVencedorRodada();
                 vencedorJogo = jogo.getVencedorDaPartida();                
             }            
@@ -231,16 +229,21 @@ public class TelaJogo extends javax.swing.JFrame{
 
 
     private void aguardarEscolhaDaAposta() {                
-        do {                        
-            setMensagemJogo("Escolha sua aposta");
-        } while (!escolheuAposta && isVisible());
+        setMensagemJogo("Escolha sua aposta");
+        while (!escolheuAposta) {
+            if (!isVisible())
+                break;
+        }        
         escolheuAposta = false;
     }
 
-    private void aguardarPalpite() {        
-        do {            
-            setMensagemJogo("Dê o seu palpite");
-        } while (!deuPalpite && isVisible());
+    private void aguardarPalpite() throws RemoteException {     
+        atualizarPalpitesEscolhidos();
+        setMensagemJogo("Dê o seu palpite");
+        while (!deuPalpite) {
+            if (!isVisible())
+                break;
+        }
         deuPalpite = false;
     }
     
@@ -517,7 +520,7 @@ public class TelaJogo extends javax.swing.JFrame{
                                 .addComponent(iniciarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(177, 177, 177)
-                                .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 284, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -571,16 +574,18 @@ public class TelaJogo extends javax.swing.JFrame{
         try {
             if (mensagemJogo.getText().contains("palpite")) {
                 if (!jogo.darPalpite(nomeJogador, campoValor)) {
-                    setMensagemJogo("Esse palpite já foi dado"); 
-                    sleep(5000);                                       
+                    setMensagemJogo("Esse palpite já foi dado");                     
                 } else {                    
                     deuPalpite = true;
                 }
             } else if (mensagemJogo.getText().contains("aposta")) {
-                jogo.esconderPalitinhos(nomeJogador, campoValor);
-                escolheuAposta = true;
+                if (!jogo.esconderPalitinhos(nomeJogador, campoValor)) {
+                    setMensagemJogo("Você não possui essa quantidade de palitos");                           
+                } else {
+                    escolheuAposta = true;
+                }
             }
-        } catch (RemoteException | InterruptedException ex) {
+        } catch (RemoteException ex) {
             Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_confirmButtonActionPerformed
