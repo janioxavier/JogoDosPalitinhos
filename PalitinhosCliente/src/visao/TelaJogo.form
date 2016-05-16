@@ -42,7 +42,7 @@
                       <Component id="filler1" min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
-                              <EmptySpace pref="12" max="32767" attributes="0"/>
+                              <EmptySpace pref="23" max="32767" attributes="0"/>
                               <Component id="campoField" min="-2" pref="117" max="-2" attributes="0"/>
                               <EmptySpace pref="144" max="32767" attributes="0"/>
                           </Group>
@@ -142,7 +142,7 @@
                       </Group>
                       <Component id="jogador1" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="30" max="32767" attributes="0"/>
+                  <EmptySpace pref="62" max="32767" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -174,7 +174,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="quantidadeJ1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="jLabel1"/>
+            <Property name="text" type="java.lang.String" value="Q:"/>
           </Properties>
         </Component>
       </SubComponents>
@@ -194,7 +194,7 @@
                       </Group>
                       <Component id="jogador2" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="22" max="32767" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <Component id="jPanel5" min="-2" max="-2" attributes="0"/>
@@ -277,14 +277,14 @@
             </Component>
             <Component class="javax.swing.JLabel" name="quantidadeJ3">
               <Properties>
-                <Property name="text" type="java.lang.String" value="jLabel3"/>
+                <Property name="text" type="java.lang.String" value="Q:"/>
               </Properties>
             </Component>
           </SubComponents>
         </Container>
         <Component class="javax.swing.JLabel" name="quantidadeJ2">
           <Properties>
-            <Property name="text" type="java.lang.String" value="jLabel2"/>
+            <Property name="text" type="java.lang.String" value="Q:"/>
           </Properties>
         </Component>
       </SubComponents>
@@ -304,7 +304,7 @@
                       </Group>
                       <Component id="jogador5" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace pref="18" max="32767" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <Component id="jPanel7" min="-2" max="-2" attributes="0"/>
@@ -387,14 +387,14 @@
             </Component>
             <Component class="javax.swing.JLabel" name="quantidadeJ6">
               <Properties>
-                <Property name="text" type="java.lang.String" value="jLabel6"/>
+                <Property name="text" type="java.lang.String" value="Q:"/>
               </Properties>
             </Component>
           </SubComponents>
         </Container>
         <Component class="javax.swing.JLabel" name="quantidadeJ5">
           <Properties>
-            <Property name="text" type="java.lang.String" value="jLabel5"/>
+            <Property name="text" type="java.lang.String" value="Q:"/>
           </Properties>
         </Component>
       </SubComponents>
@@ -446,7 +446,7 @@
         </Component>
         <Component class="javax.swing.JLabel" name="quantidadeJ4">
           <Properties>
-            <Property name="text" type="java.lang.String" value="jLabel4"/>
+            <Property name="text" type="java.lang.String" value="Q:"/>
           </Properties>
         </Component>
       </SubComponents>
