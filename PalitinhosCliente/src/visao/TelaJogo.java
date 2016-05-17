@@ -18,7 +18,7 @@ import static java.lang.Thread.sleep;
  *
  * @author Jânio Xavier
  */
-public class TelaJogo extends javax.swing.JFrame{
+public class TelaJogo extends javax.swing.JFrame {
 
     public static final int MAXIMO_JOGADORES = 6;
     private JogoPalitinho jogo;
@@ -27,24 +27,25 @@ public class TelaJogo extends javax.swing.JFrame{
     private List<String> jogadoresOnline;
     private boolean escolheuAposta;
     private boolean deuPalpite;
-    
+    private boolean deuPalpiteCorreto;
+
     /**
      * Creates new form TelaJogo
      *
      * @param jogo jogo dos palitinhos
      */
     public TelaJogo(JogoPalitinho jogo) {
-        initComponents();                    
+        initComponents();
         this.jogo = jogo;
         nomeJogador = null;
         numeroJogadoresOnline = 0;
         jogadoresOnline = new ArrayList<>();
         escolheuAposta = false;
         deuPalpite = false;
+        jPanelPalitos.setVisible(false);
+        jPanelPalpite.setVisible(false);
         setMensagemJogo("aguardando jogadores...");
-    }   
-    
-    
+    }
 
     /**
      * Creates new form TelaJogo
@@ -52,7 +53,40 @@ public class TelaJogo extends javax.swing.JFrame{
     public TelaJogo() {
         initComponents();
     }
-    
+
+    private void mostrarPanelPalitos() throws RemoteException {
+        jPanelPalitos.setVisible(true);
+        int totalPalitos = jogo.getTotalPalitosJogador(nomeJogador);
+        int count = 0;
+
+        while (count <= totalPalitos) {
+            setVisibleButtonPalitos(count, true);
+            count++;
+        }
+
+        while (count < 4) {
+            setVisibleButtonPalitos(count, false);
+            count++;
+        }
+    }
+
+    private void setVisibleButtonPalitos(int button, boolean isVisible) {
+        switch (button) {
+            case 0:
+                palitoButton0.setVisible(isVisible);
+                break;
+            case 1:
+                palitoButton1.setVisible(isVisible);
+                break;
+            case 2:
+                palitoButton2.setVisible(isVisible);
+                break;
+            case 3:
+                palitoButton3.setVisible(isVisible);
+                break;
+        }
+    }
+
     public String getNomeJogador() {
         return nomeJogador;
     }
@@ -85,30 +119,30 @@ public class TelaJogo extends javax.swing.JFrame{
                 break;
         }
     }
-    
+
     private void setQuantidadePalitoJogador(String quantidade, int posicao) {
         switch (posicao) {
-            case 0:        
+            case 0:
                 quantidadeJ1.setText(quantidade);
                 break;
-            case 1:                
+            case 1:
                 quantidadeJ2.setText(quantidade);
                 break;
-            case 2:                
+            case 2:
                 quantidadeJ3.setText(quantidade);
                 break;
-            case 3:                
+            case 3:
                 quantidadeJ4.setText(quantidade);
                 break;
-            case 4:                
+            case 4:
                 quantidadeJ5.setText(quantidade);
                 break;
-            case 5:                
+            case 5:
                 quantidadeJ6.setText(quantidade);
                 break;
         }
     }
-    
+
     private void setPalpiteJogador(String palpite, int posicao) {
         switch (posicao) {
             case 0:
@@ -131,33 +165,32 @@ public class TelaJogo extends javax.swing.JFrame{
                 break;
         }
     }
-    
+
     public void iniciarJogo() {
-        
         try {
             aguardarInicioPartida();
-            atualizarJogadoresPartida();            
-            
-            String vencedorJogo = null;                        
-            while (vencedorJogo == null && isVisible()) {                
-                //atualizarPalpitesEscolhidos();
-                realizarJogada();           
+            atualizarJogadoresPartida();
+
+            String vencedorJogo = null;
+            while (vencedorJogo == null && isVisible()) {
+                //atualizarPalpitesEscolhidos();                
+                realizarJogada();
                 //atualizarPalpitesEscolhidos();
                 verificarVencedorRodada();
-                vencedorJogo = jogo.getVencedorDaPartida();                
-            }            
+                vencedorJogo = jogo.getVencedorDaPartida();
+            }
             if (!isVisible()) {
-                jogo.sair(nomeJogador);                
+                jogo.sair(nomeJogador);
                 dispose();
                 System.exit(0);
             }
             setMensagemJogo(vencedorJogo + " Venceu o jogo");
-            sleep(10000);            
+            sleep(10000);
         } catch (RemoteException | InterruptedException ex) {
             Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     private void atualizarJogadoresPartida() throws RemoteException {
         List<String> jogadoresPreparados = jogo.getJogadoresPreparados();
         int count = 0;
@@ -179,12 +212,43 @@ public class TelaJogo extends javax.swing.JFrame{
 
     private void realizarJogada() throws RemoteException {
         String jogadorDaVez;
-        jogadorDaVez = jogo.getJogadorDaVez();        
+
+        if (escolheuAposta) {
+            jPanelPalitos.setVisible(false);
+            jogadorDaVez = jogo.getJogadorDaVez();
+            if (jogadorDaVez.equals(nomeJogador)) {
+                mostrarPanelPalpite();
+            } else {
+                setMensagemJogo("Aguardando... " + jogadorDaVez);
+            }
+        } else {
+            setMensagemJogo("Esconda os palitos");
+            mostrarPanelPalitos();
+
+        }
+        /*
+        String jogadorDaVez;
+        jogadorDaVez = jogo.getJogadorDaVez();
         if (jogadorDaVez.equals(nomeJogador)) {
             aguardarEscolhaDaAposta();
             aguardarPalpite();            
         } else {
             setMensagemJogo("Aguardando... " + jogadorDaVez);
+        } */
+    }
+
+    private void mostrarPanelPalpite() {
+        if (!deuPalpite) {
+            setMensagemJogo("dê o seu palpite");
+            jPanelPalpite.setVisible(true);
+            return;
+        }
+        
+        if (deuPalpiteCorreto) {
+            jPanelPalpite.setVisible(false);
+        } else {
+            setMensagemJogo("esse palpite já foi dado");
+            jPanelPalpite.setVisible(true);
         }        
     }
 
@@ -199,13 +263,22 @@ public class TelaJogo extends javax.swing.JFrame{
             } else {
                 setMensagemJogo("Ninguem deu o palpite correto");
                 sleep(2000);
-                setMensagemJogo("O total de palitos foi: "+jogo.getTotalPalitosMostrados());
+                setMensagemJogo("O total de palitos foi: " + jogo.getTotalPalitosMostrados());
             }
             sleep(5000);
-            jogo.iniciarNovaRodada();
+            iniciarNovaRodada();
         }
-    }        
-    
+    }
+
+    private void iniciarNovaRodada() throws RemoteException {
+        jogo.iniciarNovaRodada();
+        mostrarPanelPalitos();
+        jPanelPalpite.setVisible(false);
+        escolheuAposta = false;
+        deuPalpite = false;
+        deuPalpiteCorreto = false;
+    }
+
     private void atualizarPalpitesEscolhidos() throws RemoteException {
         List<String> jogadoresPreparados = jogo.getJogadoresPreparados();
         int palpite;
@@ -215,11 +288,11 @@ public class TelaJogo extends javax.swing.JFrame{
                 setPalpiteJogador("Palpite não escolhido", jogo.posicaoJogador(nick));
             } else {
                 setPalpiteJogador(Integer.toString(palpite),
-                            jogo.posicaoJogador(nick));    
+                        jogo.posicaoJogador(nick));
             }
-        }        
+        }
     }
-    
+
     private void atualizarQuantidadePalitos() throws RemoteException {
         List<String> jogadoresPreparados = jogo.getJogadoresPreparados();
         int totalPalitos;
@@ -243,7 +316,6 @@ public class TelaJogo extends javax.swing.JFrame{
         }
         return novoJogadorAdicionado;
     }*/
-
     private void aguardarInicioPartida() throws RemoteException {
         do {
             //adicionarJogador(jogo.getJogadoresPreparados());
@@ -253,7 +325,7 @@ public class TelaJogo extends javax.swing.JFrame{
             }
         } while (!jogo.isPartidaIniciada());
     }
-    
+
     private void aguardarInicioPartida(int tempo) throws RemoteException {
         int count = tempo;
         int numeroJogadoresOnlineAntes = numeroJogadoresOnline;
@@ -263,7 +335,7 @@ public class TelaJogo extends javax.swing.JFrame{
             try {
                 sleep(1000);
                 numeroJogadoresOnlineAntes = numeroJogadoresOnline;
-                atualizarJogadoresPartida();                
+                atualizarJogadoresPartida();
                 if (numeroJogadoresOnlineAntes < numeroJogadoresOnline) {
                     setMensagemJogo("Novo jogador adicionado");
                     //sleep(5000);
@@ -276,21 +348,20 @@ public class TelaJogo extends javax.swing.JFrame{
         jogo.iniciarJogo();
     }
 
-
-    private void aguardarEscolhaDaAposta() {                
-        do {                        
+    private void aguardarEscolhaDaAposta() {
+        do {
             setMensagemJogo("Escolha sua aposta");
         } while (!escolheuAposta && isVisible());
         escolheuAposta = false;
     }
 
-    private void aguardarPalpite() {        
-        do {            
+    private void aguardarPalpite() {
+        do {
             setMensagemJogo("Dê o seu palpite");
         } while (!deuPalpite && isVisible());
         deuPalpite = false;
     }
-    
+
     private void setMensagemJogo(String messagem) {
         mensagemJogo.setText(messagem);
     }
@@ -329,13 +400,19 @@ public class TelaJogo extends javax.swing.JFrame{
         palpite4 = new javax.swing.JLabel();
         quantidadeJ4 = new javax.swing.JLabel();
         mensagemJogo = new javax.swing.JLabel();
-        campoField = new javax.swing.JTextField();
-        confirmButton = new javax.swing.JButton();
         iniciarButton = new javax.swing.JButton();
         campoName = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         jSeparator2 = new javax.swing.JSeparator();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 220), new java.awt.Dimension(0, 220), new java.awt.Dimension(32767, 220));
+        jPanelPalpite = new javax.swing.JPanel();
+        confirmButton = new javax.swing.JButton();
+        campoField = new javax.swing.JTextField();
+        jPanelPalitos = new javax.swing.JPanel();
+        palitoButton1 = new javax.swing.JButton();
+        palitoButton0 = new javax.swing.JButton();
+        palitoButton2 = new javax.swing.JButton();
+        palitoButton3 = new javax.swing.JButton();
 
         setTitle("Jogo Palitinhos");
         setBackground(new java.awt.Color(0, 51, 51));
@@ -359,7 +436,7 @@ public class TelaJogo extends javax.swing.JFrame{
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(quantidadeJ1))
                     .addComponent(jogador1))
-                .addContainerGap(62, Short.MAX_VALUE))
+                .addContainerGap(25, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -546,20 +623,6 @@ public class TelaJogo extends javax.swing.JFrame{
         mensagemJogo.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         mensagemJogo.setText("MENSAGENS DO JOGO");
 
-        campoField.setText("campo");
-        campoField.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                campoFieldActionPerformed(evt);
-            }
-        });
-
-        confirmButton.setText("confirmar");
-        confirmButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                confirmButtonActionPerformed(evt);
-            }
-        });
-
         iniciarButton.setText("iniciar jogo");
         iniciarButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -574,34 +637,122 @@ public class TelaJogo extends javax.swing.JFrame{
             }
         });
 
+        confirmButton.setText("confirmar");
+        confirmButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                confirmButtonActionPerformed(evt);
+            }
+        });
+
+        campoField.setText("campo");
+        campoField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                campoFieldActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelPalpiteLayout = new javax.swing.GroupLayout(jPanelPalpite);
+        jPanelPalpite.setLayout(jPanelPalpiteLayout);
+        jPanelPalpiteLayout.setHorizontalGroup(
+            jPanelPalpiteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelPalpiteLayout.createSequentialGroup()
+                .addGroup(jPanelPalpiteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanelPalpiteLayout.createSequentialGroup()
+                        .addGap(42, 42, 42)
+                        .addComponent(campoField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanelPalpiteLayout.createSequentialGroup()
+                        .addGap(22, 22, 22)
+                        .addComponent(confirmButton)))
+                .addContainerGap(38, Short.MAX_VALUE))
+        );
+        jPanelPalpiteLayout.setVerticalGroup(
+            jPanelPalpiteLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelPalpiteLayout.createSequentialGroup()
+                .addGap(33, 33, 33)
+                .addComponent(campoField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(confirmButton))
+        );
+
+        palitoButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/visao/palito1.jpg"))); // NOI18N
+        palitoButton1.setPreferredSize(new java.awt.Dimension(60, 60));
+        palitoButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                palitoButton1ActionPerformed(evt);
+            }
+        });
+
+        palitoButton0.setIcon(new javax.swing.ImageIcon(getClass().getResource("/visao/palito0.jpg"))); // NOI18N
+        palitoButton0.setMaximumSize(new java.awt.Dimension(60, 60));
+        palitoButton0.setMinimumSize(new java.awt.Dimension(60, 60));
+        palitoButton0.setPreferredSize(new java.awt.Dimension(60, 60));
+        palitoButton0.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                palitoButton0ActionPerformed(evt);
+            }
+        });
+
+        palitoButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/visao/palito2.jpg"))); // NOI18N
+        palitoButton2.setPreferredSize(new java.awt.Dimension(60, 60));
+        palitoButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                palitoButton2ActionPerformed(evt);
+            }
+        });
+
+        palitoButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/visao/palito3.jpg"))); // NOI18N
+        palitoButton3.setPreferredSize(new java.awt.Dimension(60, 60));
+        palitoButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                palitoButton3ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanelPalitosLayout = new javax.swing.GroupLayout(jPanelPalitos);
+        jPanelPalitos.setLayout(jPanelPalitosLayout);
+        jPanelPalitosLayout.setHorizontalGroup(
+            jPanelPalitosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelPalitosLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelPalitosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(palitoButton0, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(palitoButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(jPanelPalitosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(palitoButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(palitoButton3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 21, Short.MAX_VALUE))
+        );
+        jPanelPalitosLayout.setVerticalGroup(
+            jPanelPalitosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanelPalitosLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanelPalitosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(palitoButton0, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(palitoButton1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanelPalitosLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(palitoButton2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(palitoButton3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jSeparator2))
-                        .addGap(50, 50, 50)
-                        .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 23, Short.MAX_VALUE)
-                                .addComponent(campoField, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 144, Short.MAX_VALUE))
+                                .addComponent(jSeparator2)
+                                .addGap(50, 50, 50))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(37, 37, 37)
-                                .addComponent(confirmButton)
+                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(jPanel8, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                        .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -611,15 +762,53 @@ public class TelaJogo extends javax.swing.JFrame{
                                 .addGap(177, 177, 177)
                                 .addComponent(iniciarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(177, 177, 177)
-                                .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(57, 57, 57)
+                                        .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 248, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(83, 83, 83)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                            .addComponent(jPanelPalitos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                                .addGap(32, 32, 32)
+                                                .addComponent(jPanelPalpite, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))))))
                         .addGap(0, 0, Short.MAX_VALUE)))
+                .addGap(66, 66, 66)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanel8, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(campoName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(iniciarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanelPalitos, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanelPalpite, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(5, 5, 5))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(85, 85, 85))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -630,56 +819,12 @@ public class TelaJogo extends javax.swing.JFrame{
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(campoName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(iniciarButton, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(mensagemJogo, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(39, 39, 39)
-                .addComponent(campoField, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(confirmButton)
-                .addGap(21, 21, 21))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void campoFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoFieldActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_campoFieldActionPerformed
-
-    private void confirmButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmButtonActionPerformed
-        // TODO add your handling code here:
-        int campoValor = Integer.parseInt(campoField.getText());
-        try {
-            if (mensagemJogo.getText().contains("palpite")) {
-                if (!jogo.darPalpite(nomeJogador, campoValor)) {
-                    setMensagemJogo("Esse palpite já foi dado"); 
-                    sleep(5000);                                       
-                } else {                    
-                    deuPalpite = true;
-                }
-            } else if (mensagemJogo.getText().contains("aposta")) {
-                //if(campoValor > )
-                jogo.esconderPalitinhos(nomeJogador, campoValor);
-                escolheuAposta = true;
-            }
-        } catch (RemoteException | InterruptedException ex) {
-            Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }//GEN-LAST:event_confirmButtonActionPerformed
 
     private void campoNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoNameActionPerformed
         // TODO add your handling code here:
@@ -705,9 +850,81 @@ public class TelaJogo extends javax.swing.JFrame{
             } catch (RemoteException ex) {
                 Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
             }
+
         }
     }//GEN-LAST:event_iniciarButtonActionPerformed
-    
+
+    private void campoFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_campoFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_campoFieldActionPerformed
+
+    private void confirmButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmButtonActionPerformed
+        // TODO add your handling code here:
+        int campoValor = Integer.parseInt(campoField.getText());
+        try {
+            if (mensagemJogo.getText().contains("palpite")) {
+                verificarPalpite(campoValor);
+            } else if (mensagemJogo.getText().contains("aposta")) {
+                //if(campoValor > )
+                jogo.esconderPalitinhos(nomeJogador, campoValor);
+                escolheuAposta = true;
+            }
+        } catch (RemoteException | InterruptedException ex) {
+            Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_confirmButtonActionPerformed
+
+    private void verificarPalpite(int palpite) throws RemoteException, InterruptedException {
+        boolean sucesso = jogo.darPalpite(nomeJogador, palpite);
+        deuPalpite = true;
+        if (sucesso) {            
+            deuPalpiteCorreto = true;            
+        } 
+    }
+
+    private void palitoButton0ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_palitoButton0ActionPerformed
+        try {
+            // TODO add your handling code here:
+            jogo.esconderPalitinhos(nomeJogador, 0);
+            escolheuAposta = true;
+        } catch (RemoteException ex) {
+            Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_palitoButton0ActionPerformed
+
+    private void palitoButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_palitoButton1ActionPerformed
+        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
+            jogo.esconderPalitinhos(nomeJogador, 1);
+            escolheuAposta = true;
+        } catch (RemoteException ex) {
+            Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_palitoButton1ActionPerformed
+
+    private void palitoButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_palitoButton2ActionPerformed
+        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
+            jogo.esconderPalitinhos(nomeJogador, 2);
+            escolheuAposta = true;
+        } catch (RemoteException ex) {
+            Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_palitoButton2ActionPerformed
+
+    private void palitoButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_palitoButton3ActionPerformed
+        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
+            jogo.esconderPalitinhos(nomeJogador, 3);
+            escolheuAposta = true;
+        } catch (RemoteException ex) {
+            Logger.getLogger(TelaJogo.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_palitoButton3ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -755,6 +972,8 @@ public class TelaJogo extends javax.swing.JFrame{
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanelPalitos;
+    private javax.swing.JPanel jPanelPalpite;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JLabel jogador1;
@@ -764,6 +983,10 @@ public class TelaJogo extends javax.swing.JFrame{
     private javax.swing.JLabel jogador5;
     private javax.swing.JLabel jogador6;
     private javax.swing.JLabel mensagemJogo;
+    private javax.swing.JButton palitoButton0;
+    private javax.swing.JButton palitoButton1;
+    private javax.swing.JButton palitoButton2;
+    private javax.swing.JButton palitoButton3;
     private javax.swing.JLabel palpite1;
     private javax.swing.JLabel palpite2;
     private javax.swing.JLabel palpite3;
