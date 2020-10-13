@@ -25,8 +25,12 @@ public class JogoBDTest {
         bd = new JogoBD();
     }
     
+    List<String> statementList, values;
+    
     @BeforeClass
-    public static void setUpClass() {        
+    public static void setUpClass() {   
+        values = new ArrayList<>();
+        statementList = new ArrayList<>();
     }
     
     @AfterClass
@@ -35,6 +39,7 @@ public class JogoBDTest {
     
     @Before
     public void setUp() {        
+        bd.createConnection("Teste_Insert");
     }
     
     @After
@@ -43,11 +48,6 @@ public class JogoBDTest {
     
     @Test
     public void testInsertDataInTable() {
-        bd.createConnection("Teste_Insert");
-        List<String> statementList, values;
-        
-        values = new ArrayList<>();
-        statementList = new ArrayList<>();
         
         statementList.add("id integer");
         statementList.add("name string");
@@ -79,7 +79,7 @@ public class JogoBDTest {
 
     // TODO add test methods here.
     // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
+
+    @Test
+    public void hello() {}
 }
