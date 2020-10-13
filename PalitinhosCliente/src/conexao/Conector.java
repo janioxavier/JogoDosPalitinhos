@@ -45,34 +45,31 @@ public class Conector {
         conector.connect();
         
         JogoPalitinho jogo = conector.getJogo();
-        //try {
-        //    String nomeJogador = JOptionPane.showInputDialog("Digite seu nome:");
-          //  jogo.login(nomeJogador);            
-           // List<String> jogadores = jogo.getLista();
-            
-            //conector.iniciarJogo(jogo);
-            TelaJogo tela = new TelaJogo(jogo);
-            tela.setVisible(true);
-            tela.iniciarJogo();
-            //if(jogadores.size() >=4){
-                //String palpite = JOptionPane.showInputDialog("Digite seu palpite:");
-            
-             //   TelaCliente tela = new TelaCliente(jogadores, jogo , nomeJogador);
-               // tela.setVisible(true);
-                
-                
-               
-                
-                /*for (String j : jogadores) {
-                    jogo.jogar(j, Integer.parseInt(JOptionPane.showInputDialog("Digite sua quantidade de palitos:"+j)));
-                }*/
-            //}
-            
-            //for (String nome : jogadores) {
-              //  System.out.println("Jogador: " + nome + " está no jogo.");
-            //}     
-       // } catch (RemoteException ex) {
-         //   Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
-        //}                
+        try {
+		String playerName = JOptionPane.showInputDialog("Digite seu nome:");
+		jogo.login(playerName);            
+		List<String> jogadores = jogo.getLista();
+
+		conector.iniciarJogo(jogo);
+		TelaJogo tela = new TelaJogo(jogo);
+		tela.setVisible(true);
+		tela.iniciarJogo();
+		if(jogadores.size() >=4){
+			String palpite = JOptionPane.showInputDialog("Digite seu palpite:");
+
+			telaCliente tela = new TelaCliente(jogadores, jogo , playerName);
+			tela.setVisible(true);
+
+			for (String j : jogadores) {
+			    jogo.jogar(j, Integer.parseInt(JOptionPane.showInputDialog("Digite sua quantidade de palitinhos:"+j)));
+			}
+		}
+
+		for (String nome : jogadores) {
+			System.out.println("Jogador: " + nome + " está no jogo.");
+		}     
+	} catch (RemoteException ex) {
+          Logger.getLogger(Conector.class.getName()).log(Level.SEVERE, null, ex);
+       }                
     }
 }
